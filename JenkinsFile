@@ -31,7 +31,7 @@ pipeline {
         
         stage('Run Application') {
             steps {
-                bat "nohup java -jar target/*.jar > app.log 2>&1 &"
+                bat 'start /B java -jar target\\*.jar > app.log 2>&1'
             }
         }
     }
