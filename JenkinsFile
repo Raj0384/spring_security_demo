@@ -2,13 +2,14 @@ pipeline {
   agent any
 
   tools {
-    jdk 'Java17'      // Configured in Manage Jenkins -> Global Tool Configuration
-    maven 'Maven3'    // Configured in Manage Jenkins -> Global Tool Configuration
+    jdk 'Java17'      // Manage Jenkins -> Tools
+    maven 'Maven3'    // Manage Jenkins -> Tools
   }
 
   environment {
-    DOCKER_IMAGE = 'your-dockerhub-username/springsec-app'  // Change this to your repo name
-    DOCKERHUB_CREDENTIALS_ID = 'dockerhub-creds'            // Jenkins credentials ID
+    // Change these to match your Docker Hub details
+    DOCKER_IMAGE = 'yubraj015/springsec-app'
+    DOCKERHUB_CREDENTIALS_ID = 'dockerhub-creds'
   }
 
   stages {
@@ -20,7 +21,7 @@ pipeline {
 
     stage('Build JAR') {
       steps {
-        bat 'mvn clean package'
+        bat 'mvn -B -DskipTests clean package'
       }
     }
 
@@ -45,7 +46,7 @@ pipeline {
 
   post {
     success {
-      echo "✅ Build & push complete: ${env.DOCKER_IMAGE}:latest and :${env.BUILD_NUMBER}"
+      echo "✅ Build & push complete: ${DOCKER_IMAGE}:latest and :${BUILD_NUMBER}"
       echo "👉 To run locally with MySQL: docker compose up -d"
     }
     failure {
