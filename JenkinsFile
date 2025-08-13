@@ -1,47 +1,55 @@
 pipeline {
-    agent any
-    
-    tools {
-        jdk 'Java17'         // Name of JDK in Jenkins Global Tool Config
-        maven 'Maven3'      // Name of Maven installation in Jenkins Global Tool Config
+  agent any
+
+  tools {
+    jdk 'Java17'      // Configured in Manage Jenkins -> Global Tool Configuration
+    maven 'Maven3'    // Configured in Manage Jenkins -> Global Tool Configuration
+  }
+
+  environment {
+    DOCKER_IMAGE = 'your-dockerhub-username/springsec-app'  // Change this to your repo name
+    DOCKERHUB_CREDENTIALS_ID = 'dockerhub-creds'            // Jenkins credentials ID
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        git branch: 'main', url: 'https://github.com/Raj0384/spring_security_demo.git'
+      }
     }
 
-    environment {
-        APP_NAME = "spring-boot-app"
+    stage('Build JAR') {
+      steps {
+        bat 'mvn clean package'
+      }
     }
-    
-    stages {
-        stage('Checkout') {
-            steps {
-                git branch: 'main', url: 'https://github.com/Raj0384/spring_security_demo.git'
-            }
-        }
-        
-        stage('Build') {
-            steps {
-                bat 'mvn clean package'
-            }
-        }
-        
-        stage('Test') {
-            steps {
-                bat 'mvn test'
-            }
-        }
-        
-        stage('Run Application') {
-            steps {
-                bat 'start /B java -jar target\\*.jar > app.log 2>&1'
-            }
-        }
+
+    stage('Docker Build') {
+      steps {
+        bat 'docker build -t %DOCKER_IMAGE%:%BUILD_NUMBER% -t %DOCKER_IMAGE%:latest .'
+      }
     }
-    
-    post {
-        success {
-            echo "✅ Build and deployment successful!"
+
+    stage('Docker Push') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: env.DOCKERHUB_CREDENTIALS_ID,
+                                          usernameVariable: 'DOCKER_USER',
+                                          passwordVariable: 'DOCKER_PASS')]) {
+          bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
         }
-        failure {
-            echo "❌ Build failed!"
-        }
+        bat 'docker push %DOCKER_IMAGE%:%BUILD_NUMBER%'
+        bat 'docker push %DOCKER_IMAGE%:latest'
+      }
     }
+  }
+
+  post {
+    success {
+      echo "✅ Build & push complete: ${env.DOCKER_IMAGE}:latest and :${env.BUILD_NUMBER}"
+      echo "👉 To run locally with MySQL: docker compose up -d"
+    }
+    failure {
+      echo "❌ Pipeline failed"
+    }
+  }
 }
