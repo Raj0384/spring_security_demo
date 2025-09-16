@@ -1,5 +1,8 @@
 package com.org.SpringSec.model;
 
+import java.util.Date;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -17,8 +20,31 @@ public class Users {
 	
 	private String username;
 	
+	private String email;
+	
+	@Column(unique = true, nullable = false)
 	private String password;
 	
+	private String resetToken;
+
+	private Date resetTokenExpiry;
+
+	public String getResetToken() {
+		return resetToken;
+	}
+
+	public void setResetToken(String resetToken) {
+		this.resetToken = resetToken;
+	}
+
+	public Date getResetTokenExpiry() {
+		return resetTokenExpiry;
+	}
+
+	public void setResetTokenExpiry(Date resetTokenExpiry) {
+		this.resetTokenExpiry = resetTokenExpiry;
+	}
+
 	public Users(int id, String username, String password) {
 		super();
 		this.id = id;
@@ -52,6 +78,14 @@ public class Users {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 	
 }

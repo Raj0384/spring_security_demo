@@ -35,7 +35,7 @@ public class SecurityConfig {
 		
 		return http.csrf(customizer -> customizer.disable())
 		    .authorizeHttpRequests(request -> request
-		    		.requestMatchers("/register","/login")
+		    		.requestMatchers("/register","/login","/forgot-password","/reset-password")
 		    		.permitAll()
 		    		.anyRequest().authenticated())
 		    .httpBasic(Customizer.withDefaults())//default spring property for postman

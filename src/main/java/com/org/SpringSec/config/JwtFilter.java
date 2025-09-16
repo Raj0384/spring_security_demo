@@ -13,6 +13,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.org.SpringSec.service.JWTService;
 import com.org.SpringSec.service.MyUserDetailsService;
+import com.org.SpringSec.service.TokenBlacklistService;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -27,6 +28,9 @@ public class JwtFilter extends OncePerRequestFilter {
 	
 	@Autowired
 	private ApplicationContext context;
+	
+	@Autowired
+	private TokenBlacklistService tokenBlacklistService;
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -37,6 +41,10 @@ public class JwtFilter extends OncePerRequestFilter {
 		
 		if(authHeader != null && authHeader.startsWith("Bearer ")) {
 			token = authHeader.substring(7);
+			if (tokenBlacklistService.isTokenBlacklisted(token)) {
+	            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+	            return;
+	        }
 			username = jwtService.extractUsername(token);
 		}
 		
